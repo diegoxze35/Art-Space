@@ -15,9 +15,12 @@ import com.android.artspace.model.DateData
 import com.android.artspace.model.EmptyData
 import com.android.artspace.model.ImageData
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.runBlocking
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -102,5 +105,5 @@ class ImageProvider @Inject constructor(@ApplicationContext private val applicat
 			cancel()
 			cursor = null
 		}
-	}
+	}.flowOn(Dispatchers.IO).cancellable()
 }

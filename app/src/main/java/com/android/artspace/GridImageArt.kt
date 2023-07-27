@@ -1,5 +1,6 @@
 package com.android.artspace
 
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +26,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.android.artspace.model.ComposeData
 import com.android.artspace.model.DateData
@@ -35,10 +38,15 @@ import com.android.artspace.viewmodel.ImageViewModel
 @Composable
 fun GridImageArt(viewModel: ImageViewModel, modifier: Modifier = Modifier) {
 	val images: List<ComposeData> by viewModel.listState.collectAsState()
-	
+	val configuration = LocalConfiguration.current
 	LazyVerticalGrid(
-		columns = GridCells.Fixed(4),
-		modifier = modifier.fillMaxSize(),
+		columns = GridCells.Fixed(
+			if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
+				4
+			else
+				6
+		),
+		modifier = modifier.fillMaxSize()   ,
 		contentPadding = PaddingValues(all = 12.dp),
 		horizontalArrangement = Arrangement.spacedBy(6.dp),
 		verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -58,14 +66,16 @@ fun GridImageArt(viewModel: ImageViewModel, modifier: Modifier = Modifier) {
 						),
 					horizontalArrangement = Arrangement.SpaceBetween,
 				) {
-					Text(text = it.content, modifier = Modifier.padding(
-						start = 8.dp, top = 6.dp, bottom = 6.dp
-					))
+					Text(
+						text = it.content, modifier = Modifier.padding(
+							start = 12.dp, top = 6.dp, bottom = 6.dp
+						), fontWeight = FontWeight.Bold
+					)
 					Icon(
 						imageVector = Icons.Filled.DateRange,
 						contentDescription = null,
 						modifier = Modifier.padding(
-							end = 8.dp, top = 6.dp, bottom = 6.dp
+							end = 12.dp, top = 6.dp, bottom = 6.dp
 						)
 					)
 				}
@@ -81,5 +91,4 @@ fun GridImageArt(viewModel: ImageViewModel, modifier: Modifier = Modifier) {
 			}
 		}
 	}
-	viewModel.getAllPhotos()
 }

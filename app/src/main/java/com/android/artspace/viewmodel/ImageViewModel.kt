@@ -6,7 +6,6 @@ import com.android.artspace.datasource.ImageProvider
 import com.android.artspace.model.ComposeData
 import com.android.artspace.model.EmptyData
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,8 +19,8 @@ class ImageViewModel @Inject constructor(private val imageProvider: ImageProvide
 	private val _listState: MutableStateFlow<List<ComposeData>> = MutableStateFlow(listOf(EmptyData))
 	val listState: StateFlow<List<ComposeData>> get() = _listState.asStateFlow()
 	
-	fun getAllPhotos() {
-		viewModelScope.launch(Dispatchers.IO) {
+	init {
+		viewModelScope.launch {
 			imageProvider.images.collect { newList: List<ComposeData> ->
 				_listState.update { it + newList }
 			}
