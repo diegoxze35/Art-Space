@@ -2,24 +2,19 @@ package com.android.artspace.datasource
 
 import android.content.Context
 import android.database.Cursor
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
-import android.os.Build
-import android.os.CancellationSignal
 import android.provider.MediaStore
 import android.util.Size
-import androidx.compose.ui.graphics.asImageBitmap
 import com.android.artspace.model.ComposeData
 import com.android.artspace.model.DateData
 import com.android.artspace.model.EmptyData
 import com.android.artspace.model.ImageData
+import com.android.artspace.ui.extensions.loadThumbnail
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.runBlocking
 import java.text.DateFormat
@@ -32,6 +27,10 @@ import kotlin.properties.Delegates
 @Singleton
 class ImageProvider @Inject constructor(@ApplicationContext private val applicationContext: Context) {
 	
+	private val size = Size(
+		150 * (applicationContext.resources.configuration.densityDpi / 160),
+		150 * (applicationContext.resources.configuration.densityDpi / 160)
+	)
 	private val formatter = SimpleDateFormat.getDateInstance(DateFormat.FULL)
 	private var cursor: Cursor? = null
 	private fun getCursor(): Cursor? = applicationContext.contentResolver.query(
@@ -61,8 +60,8 @@ class ImageProvider @Inject constructor(@ApplicationContext private val applicat
 			data.add(DateData(firstDate))
 			cursor.moveToPrevious()
 			var currentDate by Delegates.observable(initialValue = firstDate) { _, old, new ->
-				runBlocking {
-					if (new != old) {
+				if (new != old) {
+					runBlocking {
 						send(data.toList())
 						data.clear()
 						data.add(DateData(new))
@@ -79,31 +78,22 @@ class ImageProvider @Inject constructor(@ApplicationContext private val applicat
 				data.add(
 					ImageData(
 						id = id,
-						bitmap = (Uri.withAppendedPath(
+						bitmap = Uri.withAppendedPath(
 							MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
 							"$id"
-						)).run {
-							(if (Build.VERSION.SDK_INT >= 29) {
-								applicationContext.contentResolver.loadThumbnail(
-									this, Size(640, 480), CancellationSignal()
-								)
-							} else {
-								applicationContext.contentResolver.openFileDescriptor(this, "r")
-									?.use {
-										BitmapFactory.decodeFileDescriptor(it.fileDescriptor)
-									} ?: Bitmap.createBitmap(0, 0, Bitmap.Config.ALPHA_8)
-							}).asImageBitmap()
-						},
-						content = title
+						).loadThumbnail(applicationContext, size),
+						content = title,
+						date = currentDate
 					)
 				)
 				indexColum = 0
 			}
 			currentDate = String()
+			data.clear()
 		}
 		awaitClose {
 			cancel()
 			cursor = null
 		}
-	}.flowOn(Dispatchers.IO).cancellable()
+	}.flowOn(Dispatchers.IO)
 }
