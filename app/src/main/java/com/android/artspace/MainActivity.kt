@@ -1,9 +1,9 @@
 ﻿package com.android.artspace
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
@@ -22,11 +22,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.android.artspace.ui.CAMERA_PREVIEW
-import com.android.artspace.ui.CameraPreview
 import com.android.artspace.ui.extensions.isScrollUp
 import com.android.artspace.ui.theme.ArtSpaceTheme
 import com.android.artspace.viewmodel.ImageViewModel
@@ -34,7 +33,6 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-	private val viewModel: ImageViewModel by viewModels()
 	@OptIn(ExperimentalMaterial3Api::class)
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -50,7 +48,7 @@ class MainActivity : ComponentActivity() {
 						exit = slideOutHorizontally { it }
 					) {
 						FloatingActionButton(onClick = {
-							navController.navigate(CAMERA_PREVIEW)
+							startActivity(Intent(this@MainActivity, CameraActivity::class.java))
 						}, shape = CircleShape) {
 							Icon(
 								painter = painterResource(id = R.drawable.round_add_a_photo),
@@ -67,15 +65,13 @@ class MainActivity : ComponentActivity() {
 					) {
 						composable(GRID_IMAGES) {
 							visible = true
+							val viewModel = hiltViewModel<ImageViewModel>()
 							GridImageArt(
-								viewModel = viewModel,
-								gridState = gridState,
-								navController = navController
-							)
-						}
-						composable(CAMERA_PREVIEW) {
-							visible = false
-							CameraPreview()
+								data = viewModel.listState,
+								gridState = gridState
+							) {
+							
+							}
 						}
 					}
 				}
@@ -83,9 +79,6 @@ class MainActivity : ComponentActivity() {
 		}
 	}
 	
-	private fun checkCameraPermissions(): Boolean {
-		//TODO(Verify Camera permissions)
-		return true
-	}
+	//TODO(Verify Camera permissions)
 	
 }

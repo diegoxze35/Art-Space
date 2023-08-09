@@ -1,11 +1,5 @@
 package com.android.artspace.ui
 
-import android.content.res.Configuration.UI_MODE_NIGHT_NO
-import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.camera.core.CameraSelector.DEFAULT_BACK_CAMERA
-import androidx.camera.core.CameraSelector.DEFAULT_FRONT_CAMERA
-import androidx.camera.core.ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY
-import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -25,42 +19,45 @@ import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.android.artspace.R
-import com.android.artspace.ui.theme.ArtSpaceTheme
+import com.android.artspace.ui.state.CameraState
+import com.android.artspace.ui.state.FlashState
 
-const val CAMERA_PREVIEW = "CAMERA_PREVIEW"
-/*private data class FlashState(
-	@DrawableRes val icon: Int = R.drawable.outline_flash_off_24,
-	@StringRes val contentDescriptionId: Int = R.string
-)*/
+private const val ALPHA = 0.25f
 
 @Composable
-fun CameraPreview(modifier: Modifier = Modifier) {
-	val context = LocalContext.current
-	val lifecycleOwner = LocalLifecycleOwner.current
-	val cameraController by lazy {
-		LifecycleCameraController(context).apply {
-			bindToLifecycle(lifecycleOwner)
-			imageCaptureMode = CAPTURE_MODE_MAXIMIZE_QUALITY
-			cameraSelector = DEFAULT_BACK_CAMERA
-		}
-	}
+fun CameraPreview(
+	modifier: Modifier = Modifier,
+	cameraState: CameraState,
+	orientationDegreesState: Float,
+	isSelectedFlash: Boolean,
+	onChangeIsSelectedFlashMode: () -> Unit,
+	onChangeCamera: () -> Unit,
+	onFlashModeChange: (FlashState) -> Unit
+) {
+	//TODO(Observe cameraState.tapToFocusedState to draw point in screen)
 	Box(modifier = modifier.fillMaxSize()) {
-		val dpHeight = 80.dp
+		val dpHeight = LocalConfiguration.current.screenHeightDp.dp / 8
+		val padding = LocalConfiguration.current.screenWidthDp.dp / 10
 		AndroidView(
 			modifier = Modifier
 				.align(Center)
 				.fillMaxSize(),
 			factory = {
 				PreviewView(it).apply {
-					controller = cameraController
+					controller = cameraState.cameraController
+				}
+			},
+			update = { preview ->
+				preview.controller?.let {
+					it.cameraSelector = cameraState.currentCameraSelector
+					it.imageCaptureFlashMode = cameraState.flashState.mode
 				}
 			}
 		)
@@ -69,38 +66,63 @@ fun CameraPreview(modifier: Modifier = Modifier) {
 				.align(BottomCenter)
 				.fillMaxWidth()
 				.height(dpHeight)
-				.alpha(0.3f)
+				.alpha(ALPHA)
 				.background(color = MaterialTheme.colorScheme.secondaryContainer)
 		)
 		Row(
 			modifier = Modifier
 				.align(BottomCenter)
-				.fillMaxWidth(),
+				.fillMaxWidth()
+				.height(dpHeight),
 			horizontalArrangement = Arrangement.SpaceBetween
 		) {
 			IconButton(
 				onClick = {
+					if (!isSelectedFlash)
+						onChangeIsSelectedFlashMode()
+					else {
+						onFlashModeChange(FlashState.FlashOFF)
+						onChangeIsSelectedFlashMode()
+					}
 				},
 				modifier = Modifier
-					.padding(start = 48.dp)
+					.padding(start = padding)
 					.size(dpHeight / 2)
 					.align(CenterVertically)
 			) {
 				Icon(
-					painter = painterResource(id = R.drawable.outline_flash_off_24),
-					contentDescription = stringResource(id = R.string.change_camera),
-					modifier = Modifier.fillMaxSize(),
+					painter = painterResource(
+						id = if (!isSelectedFlash)
+							cameraState.flashState.icon
+						else
+							FlashState.FlashOFF.icon
+					),
+					contentDescription = null,
+					modifier = Modifier
+						.fillMaxSize()
+						.rotate(orientationDegreesState),
 					tint = MaterialTheme.colorScheme.onSecondaryContainer
 				)
 			}
 			IconButton(
-				onClick = { /*TODO*/ },
-				modifier = Modifier
-					.size(dpHeight)
+				onClick = {
+					if (!isSelectedFlash) {
+						//TODO("Implement a take picture")
+					} else {
+						onFlashModeChange(FlashState.FlashAuto)
+						onChangeIsSelectedFlashMode()
+					}
+				}, modifier = Modifier
+					.size(if (!isSelectedFlash) dpHeight else dpHeight / 2)
 					.align(CenterVertically)
 			) {
 				Icon(
-					painter = painterResource(id = R.drawable.outline_camera_24),
+					painter = painterResource(
+						id = if (!isSelectedFlash)
+							R.drawable.outline_camera_24
+						else
+							FlashState.FlashAuto.icon
+					),
 					contentDescription = stringResource(id = R.string.take_photo),
 					modifier = Modifier.fillMaxSize(),
 					tint = MaterialTheme.colorScheme.onSecondaryContainer
@@ -108,40 +130,32 @@ fun CameraPreview(modifier: Modifier = Modifier) {
 			}
 			IconButton(
 				onClick = {
-					cameraController.cameraSelector =
-						if (cameraController.cameraSelector == DEFAULT_BACK_CAMERA)
-							DEFAULT_FRONT_CAMERA
-						else
-							DEFAULT_BACK_CAMERA
+					if (!isSelectedFlash)
+						onChangeCamera()
+					else {
+						onFlashModeChange((FlashState.FlashON))
+						onChangeIsSelectedFlashMode()
+					}
 				},
 				modifier = Modifier
-					.padding(end = 48.dp)
+					.padding(end = padding)
 					.size(dpHeight / 2)
 					.align(CenterVertically)
 			) {
 				Icon(
-					painter = painterResource(id = R.drawable.outline_cached_24),
+					painter = painterResource(
+						id = if (!isSelectedFlash)
+							R.drawable.outline_cached_24
+						else
+							FlashState.FlashON.icon
+					),
 					contentDescription = stringResource(id = R.string.change_camera),
-					modifier = Modifier.fillMaxSize(),
+					modifier = Modifier
+						.fillMaxSize()
+						.rotate(orientationDegreesState),
 					tint = MaterialTheme.colorScheme.onSecondaryContainer
 				)
 			}
 		}
-	}
-}
-
-@Preview("White theme", uiMode = UI_MODE_NIGHT_NO)
-@Composable
-private fun Preview() {
-	ArtSpaceTheme {
-		CameraPreview()
-	}
-}
-
-@Preview("Black theme", uiMode = UI_MODE_NIGHT_YES)
-@Composable
-private fun PreviewNight() {
-	ArtSpaceTheme(darkTheme = true) {
-		CameraPreview()
 	}
 }

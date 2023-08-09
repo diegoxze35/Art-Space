@@ -3,9 +3,12 @@
 	xmlns:tools="http://schemas.android.com/tools">
 	
 	<uses-feature android:name="android.hardware.camera.any" />
-	<uses-permission-sdk-23 android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-	<uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+	
+	<uses-permission-sdk-23 android:name="android.permission.READ_EXTERNAL_STORAGE" />
+	
+	<uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 	<uses-permission android:name="android.permission.CAMERA" />
+	
 	<application
 		android:name=".ImageApplication"
 		android:allowBackup="true"
@@ -18,8 +21,17 @@
 		android:theme="@style/Theme.ArtSpace"
 		tools:targetApi="31">
 		<activity
+			android:name=".CameraActivity"
+			android:exported="false"
+			android:configChanges="orientation|screenLayout|screenSize|uiMode"
+			android:screenOrientation="nosensor"
+			android:hardwareAccelerated="true"
+			android:label="@string/title_activity_camera"
+			android:theme="@style/Theme.ArtSpace" />
+		<activity
 			android:name=".MainActivity"
 			android:exported="true"
+			android:hardwareAccelerated="true"
 			android:label="@string/app_name"
 			android:theme="@style/Theme.ArtSpace">
 			<intent-filter>

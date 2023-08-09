@@ -22,7 +22,6 @@ class ImageViewModel @Inject constructor(private val imageProvider: ImageProvide
 		viewModelScope.launch {
 			imageProvider.images.collect { newList: List<ComposeData> ->
 				_listState.update {
-					
 					it + newList
 				}
 			}

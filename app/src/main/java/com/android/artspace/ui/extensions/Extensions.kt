@@ -16,7 +16,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import okio.use
 
 @Composable
 fun LazyGridState.isScrollUp(): Boolean {
@@ -43,10 +42,9 @@ private val loadThumbnail: (Uri, Context, Size) -> Bitmap =
 		context.contentResolver.loadThumbnail(uri, size, cancellationSignal)
 	} else { uri, context, size ->
 		context.contentResolver.openFileDescriptor(uri, READER_MODE)?.use {
-			BitmapFactory.decodeFileDescriptor(it.fileDescriptor).apply {
-				width = size.width
-				height = size.height
-			}
+			Bitmap.createBitmap(
+				BitmapFactory.decodeFileDescriptor(it.fileDescriptor)
+			)
 		} ?: Bitmap.createBitmap(size.width, size.height, Bitmap.Config.ALPHA_8)
 	}
 

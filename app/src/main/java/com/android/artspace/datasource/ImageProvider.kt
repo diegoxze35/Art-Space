@@ -5,6 +5,7 @@ import android.database.Cursor
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Size
+import com.android.artspace.R
 import com.android.artspace.model.ComposeData
 import com.android.artspace.model.DateData
 import com.android.artspace.model.EmptyData
@@ -26,10 +27,10 @@ import kotlin.properties.Delegates
 
 @Singleton
 class ImageProvider @Inject constructor(@ApplicationContext private val applicationContext: Context) {
-	
+	private val sizeImage = applicationContext.resources.getDimension(R.dimen.image_size).toInt()
 	private val size = Size(
-		150 * (applicationContext.resources.configuration.densityDpi / 160),
-		150 * (applicationContext.resources.configuration.densityDpi / 160)
+		sizeImage * (applicationContext.resources.configuration.screenWidthDp / 160),
+		sizeImage * (applicationContext.resources.configuration.densityDpi / 160)
 	)
 	private val formatter = SimpleDateFormat.getDateInstance(DateFormat.FULL)
 	private var cursor: Cursor? = null
