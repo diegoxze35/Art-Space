@@ -7,6 +7,5 @@ import androidx.lifecycle.LiveData
 data class CameraState(
 	val cameraController: CameraController,
 	val currentCameraSelector: CameraSelector,
-	val flashState: FlashState,
-	val tapToFocusState: LiveData<Int>
+	val flashState: FlashState
 )

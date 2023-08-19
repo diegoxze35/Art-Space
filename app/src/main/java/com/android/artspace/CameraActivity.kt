@@ -9,6 +9,7 @@ import androidx.camera.view.LifecycleCameraController
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,7 +24,7 @@ import javax.inject.Inject
 class CameraActivity : ComponentActivity() {
 	@Inject
 	lateinit var cameraController: LifecycleCameraController
-	private var orientationState by mutableStateOf(0f)
+	private var orientationState by mutableFloatStateOf(0f)
 	private val orientationListener by lazy {
 		object : OrientationEventListener(this) {
 			override fun onOrientationChanged(orientation: Int) {
@@ -48,14 +49,12 @@ class CameraActivity : ComponentActivity() {
 					CameraState(
 						cameraController = cameraController,
 						currentCameraSelector = cameraController.cameraSelector,
-						flashState = FlashState.FlashOFF,
-						tapToFocusState = cameraController.tapToFocusState
+						flashState = FlashState.FlashOFF
 					)
-				
 				)
 			}
 			val orientation by animateFloatAsState(
-				targetValue = orientationState, animationSpec = tween(durationMillis = 800)
+				targetValue = orientationState, animationSpec = tween(durationMillis = 500)
 			)
 			ArtSpaceTheme {
 				CameraPreview(

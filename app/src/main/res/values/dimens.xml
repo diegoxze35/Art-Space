@@ -2,4 +2,5 @@
 <resources>
 	<dimen name="image_size">100dp</dimen>
 	<dimen name="padding_small">6dp</dimen>
+	<dimen name="indicator_focused_size">70dp</dimen>
 </resources>

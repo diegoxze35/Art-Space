@@ -19,7 +19,7 @@ object ActivityModule {
 	fun providesCameraController(@ApplicationContext context: Context): LifecycleCameraController =
 		LifecycleCameraController(context).apply {
 			unbind()
-			isTapToFocusEnabled = true
+			isTapToFocusEnabled = false /*Tap to focused manually*/
 			imageCaptureMode = ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY
 			cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 			imageCaptureFlashMode = FLASH_MODE_OFF

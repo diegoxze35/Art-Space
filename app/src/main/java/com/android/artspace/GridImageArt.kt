@@ -101,10 +101,10 @@ fun GridImageArt(
 					contentDescription = it.content,
 					modifier = Modifier
 						.clickable { onClickImage(it) }
-						.size(dimensionResource(id = R.dimen.image_size)),
+						.size(dimensionResource(id = R.dimen.image_size))
 				)
 				/*TODO: Create view when no content*/
-				EmptyData -> Divider()
+				is EmptyData -> Divider()
 			}
 		}
 	}

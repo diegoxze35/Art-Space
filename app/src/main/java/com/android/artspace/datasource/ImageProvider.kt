@@ -62,7 +62,7 @@ class ImageProvider @Inject constructor(@ApplicationContext private val applicat
 			cursor.moveToPrevious()
 			var currentDate by Delegates.observable(initialValue = firstDate) { _, old, new ->
 				if (new != old) {
-					runBlocking {
+					runBlocking<Unit> {
 						send(data.toList())
 						data.clear()
 						data.add(DateData(new))

@@ -2,6 +2,7 @@
 	<string name="app_name">Art Space</string>
 	<string name="open_camera">Open the camera for a new photo</string>
 	<string name="take_photo">Take a photo</string>
+	<string name="change_flash">Change Flash Mode</string>
 	<string name="change_camera">Change between front camera and back camera</string>
 	<string name="title_activity_camera">CameraActivity</string>
 </resources>
